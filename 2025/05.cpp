@@ -13,6 +13,30 @@ int compareIntervals(const pair<ll, ll> &a, const pair<ll, ll> &b) {
 	return 2;
 }
 
+void merge(vector<pair<ll, ll>> &intervals, vector<pair<ll, ll>> &mergedIntervals) {
+	int n = intervals.size();
+	while (n != 1) {
+		pair<ll, ll> a = intervals[n - 2], b = intervals[n - 1];
+		int flag = compareIntervals(a, b);
+		if (flag) {
+			intervals.pop_back();
+			intervals.pop_back();
+			if (flag == 1) {
+				intervals.push_back({a.first, max(a.second, b.second)});
+			} else if (flag == 2) {
+				intervals.push_back(b);
+			}
+		} else {
+			mergedIntervals.push_back(b);
+			intervals.pop_back();
+		}
+		n = intervals.size();
+	}
+	mergedIntervals.push_back(intervals.back());
+	reverse(mergedIntervals.begin(), mergedIntervals.end());
+	intervals.pop_back();
+}
+
 ll part1(vector<pair<ll, ll>> &intervals, vector<ll> &ids) {
 	ll fresh{0};
 	for (const auto &id : ids) {
@@ -26,41 +50,22 @@ ll part1(vector<pair<ll, ll>> &intervals, vector<ll> &ids) {
 	return fresh;
 }
 
+ll part2(vector<pair<ll, ll>> &intervals) {
+	vector<pair<ll, ll>> mergedIntervals;
+	merge(intervals, mergedIntervals);
+	ll total_fresh{0};
+	for (const auto &interval : mergedIntervals) {
+		total_fresh += interval.second - interval.first + 1;
+	}
+	return total_fresh;
+}
+
 int main () {
 	string input;
 	vector<pair<ll, ll>> intervals;
-	vector<pair<ll, ll>> mergedIntervals;
 	vector<ll> ids;
 	while (1) {
 		cin >> input;
-		if (!input.compare("merge")) {
-			int n = intervals.size();
-			while (n != 1) {
-				pair<ll, ll> a = intervals[n - 2], b = intervals[n - 1];
-				int flag = compareIntervals(a, b);
-				if (flag) {
-					intervals.pop_back();
-					intervals.pop_back();
-					if (flag == 1) {
-						intervals.push_back({a.first, b.second});
-					} else if (flag == 2) {
-						intervals.push_back(b);
-					}
-				} else {
-					mergedIntervals.push_back(b);
-					intervals.pop_back();
-				}
-				n = intervals.size();
-			}
-			mergedIntervals.push_back(intervals.back());
-			reverse(mergedIntervals.begin(), mergedIntervals.end());
-			intervals.pop_back();
-		}
-		if (!input.compare("print")) {
-			printIntervals(intervals);
-			cout << "merged:\n";
-			printIntervals(mergedIntervals);
-		}
 		if (!input.compare("input")) {
 			while (1) {
 				cin >> input;
@@ -70,8 +75,8 @@ int main () {
 				for (int i = 0; i < (int) input.size(); i++) {
 					if (input[i] == '-') dash = i;
 				}
-				a = stoi(input.substr(0, dash));
-				b = stoi(input.substr(dash + 1, input.size() - dash - 1));
+				a = stoll(input.substr(0, dash));
+				b = stoll(input.substr(dash + 1, input.size() - dash - 1));
 				intervals.push_back({a, b});
 			}
 		}
@@ -85,7 +90,7 @@ int main () {
 			}
 		}
 		if (!input.compare("end")) {
-			cout << "fresh ids: " << part1(mergedIntervals, ids) << endl;
+			cout << "fresh ids: " << part1(intervals, ids) << " total fresh ids: " << part2(intervals) << endl;
 			break;
 		};
 	}
