@@ -21,35 +21,6 @@ void transpose(vector<vector<int>> &numbers, vector<vector<int>> &numbers_t) {
 	}
 }
 
-void weird(vector<vector<int>> &numbers_t, vector<vector<int>> &numbers_w) {
-	vector<vector<vector<char>>> numbers_c;
-	for (auto &line : numbers_t) {
-		vector<vector<char>> temp;
-		for (auto &num : line) {
-			string s = to_string(num);
-			vector<char> temp_num(s.begin(), s.end());
-			while (temp_num.size() < 3) {
-    			temp_num.push_back('0');
-			}
-			temp.push_back(temp_num);
-		}
-		numbers_c.push_back(temp);
-	}
-	for (auto &line : numbers_c) {
-		vector<int> temp_line;
-		for (int i = 0; i < 3; i++) {
-			vector<char> temp;
-			for (auto &num : line) {
-				temp.push_back(num[i]);
-			}
-			string s(temp.begin(), temp.end());
-			temp_line.push_back(stoi(s));
-		}
-		numbers_w.push_back(temp_line);
-	}
-	print(numbers_w);
-}
-
 long long part1(vector<vector<int>> &numbers, vector<char> &operators) {
 	vector<vector<int>> numbers_t;
 	transpose(numbers, numbers_t);
@@ -70,27 +41,48 @@ long long part1(vector<vector<int>> &numbers, vector<char> &operators) {
 }
 
 
-long long part2(vector<vector<int>> &numbers, vector<char> &operators) {
-	vector<vector<int>> numbers_t;
-	transpose(numbers, numbers_t);
-	vector<vector<int>> numbers_w;
-	weird(numbers_t, numbers_w);
+long long part2(vector<string> &input) {
+	int n = (int) input.size() - 1;
+	int length = (int) input[0].size();
+	int flag = 0; // implies add
 	long long result{0}, total{0};
-	for (int i = 0; i < (int) operators.size(); i++) {
-		if (operators[i] == '+') for (const auto &num : numbers_w[i]) result += num;
-		if (operators[i] == '*') {
-			result = 1;
-			for (const auto &num : numbers_w[i]) result *= num;
+	for (int i = 0; i < length; i++) {
+		if (!(input[n][i] == ' ')) {
+			cout << result << endl;
+			total += result;
+			if (input[n][i] == '+') {
+				flag = 0;
+				result = 0;
+			}
+			if (input[n][i] == '*') {
+				flag = 1;
+				result = 1;
+			}
 		}
-		total += result;
-		result = 0;
+		vector<char> x;
+		for (int j = 0; j < n; j++) {
+			x.push_back(input[j][i]);
+		}
+		string s(x.begin(), x.end());
+		s.erase(remove(s.begin(), s.end(), ' '), s.end());
+		int num = 0;
+		if (!s.empty()) num = stoi(s);
+		cout << num << " ";
+		if (flag == 0) result += num;
+		else {
+			if (num != 0) result *= num;
+		}
 	}
+	cout << result << endl;
+	total += result;
 	return total;
-}
+} 
+
 
 int main () {
 	string input;
 	vector<vector<int>> numbers;
+	vector<string> input_2;
 	vector<char> operators;
 	while (1) {
 		cin >> input;
@@ -117,8 +109,19 @@ int main () {
 			while (ops >> temp) operators.push_back(temp);
 			cout << "recieved all the inputs\n";
 		}
+		if (!input.compare("input2")) {
+			cin.ignore();
+			while (1) {
+				string line;
+				getline(cin, line);
+				if (!line.compare("done")) break;
+				input_2.push_back(line);
+			}
+			cout << "recieved all inputs 2";
+			cout << input_2[1].size() << endl;;
+		}
 		if (!input.compare("solve")) {
-			cout << part1(numbers, operators) << endl << part2(numbers, operators) << endl;
+			cout << part2(input_2) << endl;
 		}
 	}
 }
